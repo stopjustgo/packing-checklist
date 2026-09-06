@@ -202,6 +202,10 @@
 
       <section id="setupView" class="card">
         <div class="setup-grid">
+          <label class="wide">
+            Trip name
+            <input id="tripNameInput" type="text" placeholder="e.g. India" autocomplete="off" />
+          </label>
           <label>
             Days
             <input id="daysInput" type="number" min="1" value="1" inputmode="numeric" />
@@ -256,6 +260,7 @@
     loginError: document.getElementById("loginError"),
     setupView: document.getElementById("setupView"),
     packingView: document.getElementById("packingView"),
+    tripNameInput: document.getElementById("tripNameInput"),
     daysInput: document.getElementById("daysInput"),
     nightsInput: document.getElementById("nightsInput"),
     tripTags: document.getElementById("tripTags"),
@@ -355,6 +360,7 @@
 
   function loadTrip() {
     const cfg = {
+      tripName: els.tripNameInput.value.trim() || "My Trip",
       days: Math.max(1, Number(els.daysInput.value) || 1),
       nights: Math.max(0, Number(els.nightsInput.value) || 0),
       types: [...selectedTypes]
@@ -371,7 +377,7 @@
   }
 
   function showPacking() {
-    els.mainHeader.textContent = "Pack List";
+    els.mainHeader.textContent = state?.config?.tripName || "My Trip";
     els.tripSummary.classList.remove("hidden");
     els.setupView.classList.add("hidden");
     els.packingView.classList.remove("hidden");
@@ -394,6 +400,7 @@
       return;
     }
     const c = state.config || {};
+    els.tripNameInput.value = c.tripName ?? "";
     els.daysInput.value = c.days ?? 1;
     els.nightsInput.value = c.nights ?? 1;
     selectedTypes = new Set(c.types || []);
@@ -497,6 +504,7 @@
     localStorage.removeItem(STORAGE_KEY);
     state = null;
     selectedTypes = new Set();
+    els.tripNameInput.value = "";
     els.daysInput.value = 1;
     els.nightsInput.value = 1;
     refreshTags();
