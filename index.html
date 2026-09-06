@@ -31,7 +31,15 @@
     }
     button, input { font: inherit; }
     button { cursor: pointer; }
-    .app { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding:
+        calc(20px + env(safe-area-inset-top))
+        calc(16px + env(safe-area-inset-right))
+        calc(48px + env(safe-area-inset-bottom))
+        calc(16px + env(safe-area-inset-left));
+    }
     .hidden { display: none !important; }
     .login {
       min-height: 90vh;
@@ -51,6 +59,7 @@
       border-radius: 14px;
       padding: 14px 15px;
       outline: none;
+      font-size: 16px;
     }
     input:focus { border-color: var(--accent); }
     .btn {
