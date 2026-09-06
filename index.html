@@ -114,6 +114,16 @@
     }
     .section-title h2 { margin: 0; font-size: 19px; }
     .section-count { color: var(--muted); font-size: 13px; }
+    .section-actions { margin-top: 8px; }
+    .add-item-btn {
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--accent);
+      width: 100%;
+      border-radius: 14px;
+      padding: 11px 12px;
+      font-weight: 700;
+    }
     .item-list { display: grid; gap: 8px; }
     .item {
       display: grid;
@@ -245,11 +255,29 @@
 
   const tripTypes = ["Beach", "Mountain", "Winter", "Wedding", "International"];
   const extras = {
-    Beach: ["Beach towel", "Bathing suit"],
-    Mountain: ["Shampoo", "Conditioner"],
+    Beach: [
+      "Bathing suit",
+      "Rashguard",
+      "Beach towel",
+      "Dry pouch",
+      "Bug spray",
+      "Aloe"
+    ],
+    Mountain: [
+      "Shampoo",
+      "Conditioner",
+      "Tissues",
+      "Bug spray"
+    ],
     Winter: ["Jacket"],
     Wedding: ["Event outfit"],
-    International: ["Passport"]
+    International: [
+      "Passport",
+      "Adapters",
+      "Compression socks",
+      "Travel pillow",
+      "Travel meds"
+    ]
   };
 
   const els = {
@@ -348,13 +376,20 @@
       createItem("Sandals", 1, "Core: Clothes"),
 
       createItem("Purse", 1, "Core: Accessories"),
+      createItem("Jewelry", 1, "Core: Accessories"),
+      createItem("Sunglasses", 1, "Core: Accessories"),
+      createItem("Contacts", 1, "Core: Accessories"),
       createItem("Medication", 1, "Core: Accessories"),
-      createItem("Water bottle", 1, "Core: Accessories"),
       createItem("Period stuff", 1, "Core: Accessories"),
+      createItem("Sunscreen", 1, "Core: Accessories"),
       createItem("Hair towel", 1, "Core: Accessories"),
-      createItem("Inflatable pillow", 1, "Core: Accessories"),
+      createItem("Steamer", 1, "Core: Accessories"),
       createItem("Kindle", 1, "Core: Accessories"),
-      createItem("Charger", 1, "Core: Accessories")
+      createItem("Steam deck", 1, "Core: Accessories"),
+      createItem("Tablet", 1, "Core: Accessories"),
+      createItem("Charger", 1, "Core: Accessories"),
+      createItem("Water bottle", 1, "Core: Accessories"),
+      createItem("Inflatable pillow", 1, "Core: Accessories")
     ];
   }
 
@@ -420,6 +455,30 @@
       if (a.done !== b.done) return a.done ? 1 : -1;
       return a.order - b.order;
     });
+  }
+
+  function addCustomItem(sectionName) {
+    const name = prompt("Item name");
+    if (!name || !name.trim()) return;
+
+    const qtyRaw = prompt("Quantity", "1");
+    if (qtyRaw === null) return;
+    const qty = Math.max(0, Number(qtyRaw) || 0);
+
+    const sectionItems = state.items.filter(i => i.section === sectionName);
+    const maxOrder = sectionItems.length ? Math.max(...sectionItems.map(i => Number(i.order) || 0)) : Date.now();
+
+    state.items.push({
+      id: uid(),
+      name: name.trim(),
+      qty,
+      section: sectionName,
+      done: false,
+      order: maxOrder + 1,
+      custom: true
+    });
+    saveState();
+    render();
   }
 
   function render() {
@@ -490,6 +549,17 @@
       });
 
       wrap.appendChild(list);
+
+      const actions = document.createElement("div");
+      actions.className = "section-actions";
+      const addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.className = "add-item-btn";
+      addBtn.textContent = "+ Add item";
+      addBtn.addEventListener("click", () => addCustomItem(sectionName));
+      actions.appendChild(addBtn);
+      wrap.appendChild(actions);
+
       els.sections.appendChild(wrap);
     });
 
