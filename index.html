@@ -330,25 +330,26 @@
 
   function buildCoreItems(cfg) {
     return [
-      createItem("Pajamas", 1, "Core"),
-      createItem("Underwear", cfg.days, "Core"),
-      createItem("Socks", cfg.days, "Core"),
-      createItem("Bras", 1, "Core"),
-      createItem("Work tops", cfg.days, "Core"),
-      createItem("Day outfits", cfg.days, "Core"),
-      createItem("Night outfits", cfg.days, "Core"),
-      createItem("Purse", 1, "Core"),
-      createItem("Rain jacket", 1, "Core"),
-      createItem("Sweater for plane", 1, "Core"),
-      createItem("Walking shoes", 1, "Core"),
-      createItem("Sandals", 1, "Core"),
-      createItem("Medication", 1, "Core"),
-      createItem("Water bottle", 1, "Core"),
-      createItem("Period stuff", 1, "Core"),
-      createItem("Hair towel", 1, "Core"),
-      createItem("Inflatable pillow", 1, "Core"),
-      createItem("Kindle", 1, "Core"),
-      createItem("Charger", 1, "Core")
+      createItem("Pajamas", 1, "Core: Clothes"),
+      createItem("Underwear", cfg.days, "Core: Clothes"),
+      createItem("Socks", cfg.days, "Core: Clothes"),
+      createItem("Bras", 1, "Core: Clothes"),
+      createItem("Work tops", cfg.days, "Core: Clothes"),
+      createItem("Day outfits", cfg.days, "Core: Clothes"),
+      createItem("Night outfits", cfg.days, "Core: Clothes"),
+      createItem("Rain jacket", 1, "Core: Clothes"),
+      createItem("Sweater for plane", 1, "Core: Clothes"),
+      createItem("Walking shoes", 1, "Core: Clothes"),
+      createItem("Sandals", 1, "Core: Clothes"),
+
+      createItem("Purse", 1, "Core: Accessories"),
+      createItem("Medication", 1, "Core: Accessories"),
+      createItem("Water bottle", 1, "Core: Accessories"),
+      createItem("Period stuff", 1, "Core: Accessories"),
+      createItem("Hair towel", 1, "Core: Accessories"),
+      createItem("Inflatable pillow", 1, "Core: Accessories"),
+      createItem("Kindle", 1, "Core: Accessories"),
+      createItem("Charger", 1, "Core: Accessories")
     ];
   }
 
@@ -418,7 +419,7 @@
     if (!state) return;
     els.sections.innerHTML = "";
 
-    const sectionNames = ["Core", ...(state.config.types || [])];
+    const sectionNames = ["Core: Clothes", "Core: Accessories", ...(state.config.types || [])];
     sectionNames.forEach(sectionName => {
       const items = state.items.filter(i => i.section === sectionName);
       if (!items.length) return;
@@ -429,7 +430,7 @@
       const doneCount = items.filter(i => i.done).length;
       const heading = document.createElement("div");
       heading.className = "section-title";
-      heading.innerHTML = `<h2>${sectionName === "Core" ? "Core packing list" : sectionName}</h2><span class="section-count">${doneCount}/${items.length}</span>`;
+      heading.innerHTML = `<h2>${sectionName}</h2><span class="section-count">${doneCount}/${items.length}</span>`;
       wrap.appendChild(heading);
 
       const list = document.createElement("div");
