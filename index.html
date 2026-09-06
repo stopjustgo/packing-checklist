@@ -191,8 +191,8 @@
         <div class="brand">
           <img src="icon-192.svg" alt="" />
           <div>
-            <h1>Pack List</h1>
-            <div id="tripSummary" class="subtitle">New trip</div>
+            <h1 id="mainHeader">Tell me about your trip</h1>
+            <div id="tripSummary" class="subtitle hidden"></div>
           </div>
         </div>
         <div class="top-actions">
@@ -210,18 +210,6 @@
             Nights
             <input id="nightsInput" type="number" min="0" value="1" inputmode="numeric" />
           </label>
-          <label>
-            Work tops
-            <input id="workTopsInput" type="number" min="0" value="0" inputmode="numeric" />
-          </label>
-          <label>
-            Day outfits
-            <input id="dayOutfitsInput" type="number" min="0" value="0" inputmode="numeric" />
-          </label>
-          <label>
-            Night outfits
-            <input id="nightOutfitsInput" type="number" min="0" value="0" inputmode="numeric" />
-          </label>
           <div class="wide">
             <div style="color:var(--muted);font-size:13px;margin-bottom:7px;">Trip types</div>
             <div id="tripTags" class="tags"></div>
@@ -235,7 +223,7 @@
       <section id="packingView" class="hidden">
         <div class="card progress-card">
           <div class="progress-row">
-            <span>Packed</span>
+            <span>Progress</span>
             <strong id="progressText">0 / 0</strong>
           </div>
           <div class="bar"><div id="progressBar"></div></div>
@@ -270,13 +258,11 @@
     packingView: document.getElementById("packingView"),
     daysInput: document.getElementById("daysInput"),
     nightsInput: document.getElementById("nightsInput"),
-    workTopsInput: document.getElementById("workTopsInput"),
-    dayOutfitsInput: document.getElementById("dayOutfitsInput"),
-    nightOutfitsInput: document.getElementById("nightOutfitsInput"),
     tripTags: document.getElementById("tripTags"),
     loadTripBtn: document.getElementById("loadTripBtn"),
     sections: document.getElementById("sections"),
     tripSummary: document.getElementById("tripSummary"),
+    mainHeader: document.getElementById("mainHeader"),
     progressText: document.getElementById("progressText"),
     progressBar: document.getElementById("progressBar"),
     resetBtn: document.getElementById("resetBtn"),
@@ -348,9 +334,9 @@
       createItem("Underwear", cfg.days, "Core"),
       createItem("Socks", cfg.days, "Core"),
       createItem("Bras", 1, "Core"),
-      createItem("Work tops", cfg.workTops, "Core"),
-      createItem("Day outfits", cfg.dayOutfits, "Core"),
-      createItem("Night outfits", cfg.nightOutfits, "Core"),
+      createItem("Work tops", cfg.days, "Core"),
+      createItem("Day outfits", cfg.days, "Core"),
+      createItem("Night outfits", cfg.days, "Core"),
       createItem("Purse", 1, "Core"),
       createItem("Rain jacket", 1, "Core"),
       createItem("Sweater for plane", 1, "Core"),
@@ -370,9 +356,6 @@
     const cfg = {
       days: Math.max(1, Number(els.daysInput.value) || 1),
       nights: Math.max(0, Number(els.nightsInput.value) || 0),
-      workTops: Math.max(0, Number(els.workTopsInput.value) || 0),
-      dayOutfits: Math.max(0, Number(els.dayOutfitsInput.value) || 0),
-      nightOutfits: Math.max(0, Number(els.nightOutfitsInput.value) || 0),
       types: [...selectedTypes]
     };
 
@@ -387,6 +370,8 @@
   }
 
   function showPacking() {
+    els.mainHeader.textContent = "Pack List";
+    els.tripSummary.classList.remove("hidden");
     els.setupView.classList.add("hidden");
     els.packingView.classList.remove("hidden");
     els.resetBtn.classList.remove("hidden");
@@ -402,16 +387,14 @@
   function hydrateFromState() {
     if (!state) {
       els.resetBtn.classList.add("hidden");
-      els.tripSummary.textContent = "New trip";
+      els.mainHeader.textContent = "Tell me about your trip";
+      els.tripSummary.classList.add("hidden");
       showSetup();
       return;
     }
     const c = state.config || {};
     els.daysInput.value = c.days ?? 1;
     els.nightsInput.value = c.nights ?? 1;
-    els.workTopsInput.value = c.workTops ?? 0;
-    els.dayOutfitsInput.value = c.dayOutfits ?? 0;
-    els.nightOutfitsInput.value = c.nightOutfits ?? 0;
     selectedTypes = new Set(c.types || []);
     refreshTags();
     showPacking();
@@ -515,9 +498,6 @@
     selectedTypes = new Set();
     els.daysInput.value = 1;
     els.nightsInput.value = 1;
-    els.workTopsInput.value = 0;
-    els.dayOutfitsInput.value = 0;
-    els.nightOutfitsInput.value = 0;
     refreshTags();
     hydrateFromState();
   }
