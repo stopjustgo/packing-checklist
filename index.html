@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#599bae" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Pack List" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.svg" />
@@ -187,6 +187,9 @@
     .bar > div { height: 100%; background: var(--accent); width: 0; transition: width .2s ease; }
     .top-actions { display: flex; gap: 8px; }
     .top-actions button { padding: 9px 11px; font-size: 13px; }
+    @media (display-mode: standalone) {
+      .app { padding-top: max(calc(20px + env(safe-area-inset-top)), 64px); }
+    }
     @media (max-width: 520px) {
       .setup-grid { grid-template-columns: 1fr; }
       .setup-grid .wide { grid-column: auto; }
@@ -258,7 +261,7 @@
 
 <script>
 (() => {
-  const PASSWORD = "maplebear";
+  const PASSWORD_HASH = "2a3a34bbf76fe56ee18db90d500a1afe77bcd32337b0f5249dc81582479ba3c7";
   const STORAGE_KEY = "tripPackingStateV1";
   const AUTH_KEY = "tripPackingUnlockedV1";
 
@@ -360,9 +363,16 @@
     hydrateFromState();
   }
 
-  function attemptLogin() {
-    if (els.passwordInput.value === PASSWORD) {
-      sessionStorage.setItem(AUTH_KEY, "1");
+  async function sha256(value) {
+    const data = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function attemptLogin() {
+    const enteredHash = await sha256(els.passwordInput.value);
+    if (enteredHash === PASSWORD_HASH) {
+      localStorage.setItem(AUTH_KEY, "1");
       els.loginError.textContent = "";
       unlock();
     } else {
@@ -597,7 +607,7 @@
   els.resetBtn.addEventListener("click", resetTrip);
 
   setupTags();
-  if (sessionStorage.getItem(AUTH_KEY) === "1") unlock();
+  if (localStorage.getItem(AUTH_KEY) === "1") unlock();
 })();
 </script>
 </body>
