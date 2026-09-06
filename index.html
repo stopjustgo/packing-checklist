@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#599bae" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pack List" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <title>Pack List</title>
+  <style>
+    :root {
+      --accent: #599bae;
+      --bg: #0f1417;
+      --panel: #171e22;
+      --panel2: #20292e;
+      --text: #f4f7f8;
+      --muted: #9eb0b9;
+      --border: #2c3940;
+      --danger: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+    .hidden { display: none !important; }
+    .login {
+      min-height: 90vh;
+      display: grid;
+      place-items: center;
+    }
+    .login-card {
+      width: min(360px, 100%);
+      display: grid;
+      gap: 12px;
+    }
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 15px;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); }
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-weight: 700;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: var(--panel2); color: var(--text); }
+    .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(255,107,107,.45); }
+    .error { color: #ff9c9c; font-size: 14px; min-height: 18px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand img { width: 48px; height: 48px; border-radius: 14px; }
+    h1 { font-size: 28px; margin: 0; }
+    .subtitle { color: var(--muted); margin-top: 3px; font-size: 14px; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .setup-grid .wide { grid-column: 1 / -1; }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .tag {
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 999px;
+      user-select: none;
+    }
+    .tag.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .setup-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .setup-actions .btn { flex: 1; }
+
+    .section { margin-top: 20px; }
+    .section-title {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin: 0 2px 8px;
+    }
+    .section-title h2 { margin: 0; font-size: 19px; }
+    .section-count { color: var(--muted); font-size: 13px; }
+    .item-list { display: grid; gap: 8px; }
+    .item {
+      display: grid;
+      grid-template-columns: 34px minmax(0,1fr) 78px;
+      gap: 10px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 10px 12px;
+      transition: opacity .15s ease;
+    }
+    .item.done { opacity: .52; }
+    .check {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: white;
+      display: grid; place-items: center;
+      font-weight: 900;
+      padding: 0;
+    }
+    .item.done .check { background: var(--accent); }
+    .name-input {
+      border: 0;
+      background: transparent;
+      padding: 7px 3px;
+      border-radius: 8px;
+      min-width: 0;
+    }
+    .item.done .name-input { text-decoration: line-through; }
+    .qty-wrap {
+      display: flex; align-items: center; gap: 5px;
+      justify-content: flex-end;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .qty-input {
+      width: 52px;
+      text-align: center;
+      padding: 8px 6px;
+      border-radius: 10px;
+      background: var(--panel2);
+    }
+    .progress-card {
+      display: grid;
+      gap: 10px;
+    }
+    .progress-row { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; }
+    .bar { height: 10px; background: var(--panel2); border-radius: 999px; overflow: hidden; }
+    .bar > div { height: 100%; background: var(--accent); width: 0; transition: width .2s ease; }
+    .top-actions { display: flex; gap: 8px; }
+    .top-actions button { padding: 9px 11px; font-size: 13px; }
+    @media (max-width: 520px) {
+      .setup-grid { grid-template-columns: 1fr; }
+      .setup-grid .wide { grid-column: auto; }
+      .item { grid-template-columns: 32px minmax(0,1fr) 72px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section id="loginView" class="login">
+      <div class="login-card">
+        <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
+        <button id="loginBtn" class="btn btn-primary">Submit</button>
+        <div id="loginError" class="error"></div>
+      </div>
+    </section>
+
+    <section id="appView" class="hidden">
+      <header>
+        <div class="brand">
+          <img src="icon-192.svg" alt="" />
+          <div>
+            <h1>Pack List</h1>
+            <div id="tripSummary" class="subtitle">New trip</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button id="resetBtn" class="btn btn-danger hidden">Reset</button>
+        </div>
+      </header>
+
+      <section id="setupView" class="card">
+        <div class="setup-grid">
+          <label>
+            Days
+            <input id="daysInput" type="number" min="1" value="1" inputmode="numeric" />
+          </label>
+          <label>
+            Nights
+            <input id="nightsInput" type="number" min="0" value="1" inputmode="numeric" />
+          </label>
+          <label>
+            Work tops
+            <input id="workTopsInput" type="number" min="0" value="0" inputmode="numeric" />
+          </label>
+          <label>
+            Day outfits
+            <input id="dayOutfitsInput" type="number" min="0" value="0" inputmode="numeric" />
+          </label>
+          <label>
+            Night outfits
+            <input id="nightOutfitsInput" type="number" min="0" value="0" inputmode="numeric" />
+          </label>
+          <div class="wide">
+            <div style="color:var(--muted);font-size:13px;margin-bottom:7px;">Trip types</div>
+            <div id="tripTags" class="tags"></div>
+          </div>
+        </div>
+        <div class="setup-actions">
+          <button id="loadTripBtn" class="btn btn-primary">Load packing list</button>
+        </div>
+      </section>
+
+      <section id="packingView" class="hidden">
+        <div class="card progress-card">
+          <div class="progress-row">
+            <span>Packed</span>
+            <strong id="progressText">0 / 0</strong>
+          </div>
+          <div class="bar"><div id="progressBar"></div></div>
+        </div>
+        <div id="sections"></div>
+      </section>
+    </section>
+  </main>
+
+<script>
+(() => {
+  const PASSWORD = "maplebear";
+  const STORAGE_KEY = "tripPackingStateV1";
+  const AUTH_KEY = "tripPackingUnlockedV1";
+
+  const tripTypes = ["Beach", "Mountain", "Winter", "Wedding", "International"];
+  const extras = {
+    Beach: ["Beach towel", "Bathing suit"],
+    Mountain: ["Shampoo", "Conditioner"],
+    Winter: ["Jacket"],
+    Wedding: ["Event outfit"],
+    International: ["Passport"]
+  };
+
+  const els = {
+    loginView: document.getElementById("loginView"),
+    appView: document.getElementById("appView"),
+    passwordInput: document.getElementById("passwordInput"),
+    loginBtn: document.getElementById("loginBtn"),
+    loginError: document.getElementById("loginError"),
+    setupView: document.getElementById("setupView"),
+    packingView: document.getElementById("packingView"),
+    daysInput: document.getElementById("daysInput"),
+    nightsInput: document.getElementById("nightsInput"),
+    workTopsInput: document.getElementById("workTopsInput"),
+    dayOutfitsInput: document.getElementById("dayOutfitsInput"),
+    nightOutfitsInput: document.getElementById("nightOutfitsInput"),
+    tripTags: document.getElementById("tripTags"),
+    loadTripBtn: document.getElementById("loadTripBtn"),
+    sections: document.getElementById("sections"),
+    tripSummary: document.getElementById("tripSummary"),
+    progressText: document.getElementById("progressText"),
+    progressBar: document.getElementById("progressBar"),
+    resetBtn: document.getElementById("resetBtn"),
+  };
+
+  let selectedTypes = new Set();
+  let state = loadState();
+
+  function uid() {
+    return (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2));
+  }
+
+  function createItem(name, qty, section) {
+    return { id: uid(), name, qty: Number(qty) || 0, section, done: false, order: Date.now() + Math.random() };
+  }
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; }
+    catch { return null; }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function setupTags() {
+    els.tripTags.innerHTML = "";
+    tripTypes.forEach(type => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tag";
+      btn.textContent = type;
+      btn.dataset.type = type;
+      btn.addEventListener("click", () => {
+        if (selectedTypes.has(type)) selectedTypes.delete(type);
+        else selectedTypes.add(type);
+        refreshTags();
+      });
+      els.tripTags.appendChild(btn);
+    });
+    refreshTags();
+  }
+
+  function refreshTags() {
+    [...els.tripTags.children].forEach(btn => {
+      btn.classList.toggle("active", selectedTypes.has(btn.dataset.type));
+    });
+  }
+
+  function unlock() {
+    els.loginView.classList.add("hidden");
+    els.appView.classList.remove("hidden");
+    hydrateFromState();
+  }
+
+  function attemptLogin() {
+    if (els.passwordInput.value === PASSWORD) {
+      sessionStorage.setItem(AUTH_KEY, "1");
+      els.loginError.textContent = "";
+      unlock();
+    } else {
+      els.loginError.textContent = "Incorrect password";
+    }
+  }
+
+  function buildCoreItems(cfg) {
+    return [
+      createItem("Pajamas", 1, "Core"),
+      createItem("Underwear", cfg.days, "Core"),
+      createItem("Socks", cfg.days, "Core"),
+      createItem("Bras", 1, "Core"),
+      createItem("Work tops", cfg.workTops, "Core"),
+      createItem("Day outfits", cfg.dayOutfits, "Core"),
+      createItem("Night outfits", cfg.nightOutfits, "Core"),
+      createItem("Purse", 1, "Core"),
+      createItem("Rain jacket", 1, "Core"),
+      createItem("Sweater for plane", 1, "Core"),
+      createItem("Walking shoes", 1, "Core"),
+      createItem("Sandals", 1, "Core"),
+      createItem("Medication", 1, "Core"),
+      createItem("Water bottle", 1, "Core"),
+      createItem("Period stuff", 1, "Core"),
+      createItem("Hair towel", 1, "Core"),
+      createItem("Inflatable pillow", 1, "Core"),
+      createItem("Kindle", 1, "Core"),
+      createItem("Charger", 1, "Core")
+    ];
+  }
+
+  function loadTrip() {
+    const cfg = {
+      days: Math.max(1, Number(els.daysInput.value) || 1),
+      nights: Math.max(0, Number(els.nightsInput.value) || 0),
+      workTops: Math.max(0, Number(els.workTopsInput.value) || 0),
+      dayOutfits: Math.max(0, Number(els.dayOutfitsInput.value) || 0),
+      nightOutfits: Math.max(0, Number(els.nightOutfitsInput.value) || 0),
+      types: [...selectedTypes]
+    };
+
+    const items = buildCoreItems(cfg);
+    cfg.types.forEach(type => {
+      (extras[type] || []).forEach(name => items.push(createItem(name, 1, type)));
+    });
+
+    state = { config: cfg, items };
+    saveState();
+    showPacking();
+  }
+
+  function showPacking() {
+    els.setupView.classList.add("hidden");
+    els.packingView.classList.remove("hidden");
+    els.resetBtn.classList.remove("hidden");
+    updateSummary();
+    render();
+  }
+
+  function showSetup() {
+    els.setupView.classList.remove("hidden");
+    els.packingView.classList.add("hidden");
+  }
+
+  function hydrateFromState() {
+    if (!state) {
+      els.resetBtn.classList.add("hidden");
+      els.tripSummary.textContent = "New trip";
+      showSetup();
+      return;
+    }
+    const c = state.config || {};
+    els.daysInput.value = c.days ?? 1;
+    els.nightsInput.value = c.nights ?? 1;
+    els.workTopsInput.value = c.workTops ?? 0;
+    els.dayOutfitsInput.value = c.dayOutfits ?? 0;
+    els.nightOutfitsInput.value = c.nightOutfits ?? 0;
+    selectedTypes = new Set(c.types || []);
+    refreshTags();
+    showPacking();
+  }
+
+  function updateSummary() {
+    if (!state) return;
+    const c = state.config;
+    const types = c.types?.length ? " · " + c.types.join(", ") : "";
+    els.tripSummary.textContent = `${c.days} day${c.days === 1 ? "" : "s"} · ${c.nights} night${c.nights === 1 ? "" : "s"}${types}`;
+  }
+
+  function sortedItems(items) {
+    return [...items].sort((a,b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return a.order - b.order;
+    });
+  }
+
+  function render() {
+    if (!state) return;
+    els.sections.innerHTML = "";
+
+    const sectionNames = ["Core", ...(state.config.types || [])];
+    sectionNames.forEach(sectionName => {
+      const items = state.items.filter(i => i.section === sectionName);
+      if (!items.length) return;
+
+      const wrap = document.createElement("section");
+      wrap.className = "section";
+
+      const doneCount = items.filter(i => i.done).length;
+      const heading = document.createElement("div");
+      heading.className = "section-title";
+      heading.innerHTML = `<h2>${sectionName === "Core" ? "Core packing list" : sectionName}</h2><span class="section-count">${doneCount}/${items.length}</span>`;
+      wrap.appendChild(heading);
+
+      const list = document.createElement("div");
+      list.className = "item-list";
+
+      sortedItems(items).forEach(item => {
+        const row = document.createElement("div");
+        row.className = "item" + (item.done ? " done" : "");
+
+        const check = document.createElement("button");
+        check.className = "check";
+        check.type = "button";
+        check.textContent = item.done ? "✓" : "";
+        check.setAttribute("aria-label", item.done ? "Mark unpacked" : "Mark packed");
+        check.addEventListener("click", () => {
+          item.done = !item.done;
+          saveState();
+          render();
+        });
+
+        const name = document.createElement("input");
+        name.className = "name-input";
+        name.value = item.name;
+        name.setAttribute("aria-label", "Item name");
+        name.addEventListener("change", () => {
+          item.name = name.value.trim() || item.name;
+          saveState();
+          render();
+        });
+
+        const qtyWrap = document.createElement("div");
+        qtyWrap.className = "qty-wrap";
+        qtyWrap.innerHTML = `<span>Qty</span>`;
+
+        const qty = document.createElement("input");
+        qty.className = "qty-input";
+        qty.type = "number";
+        qty.min = "0";
+        qty.inputMode = "numeric";
+        qty.value = item.qty;
+        qty.setAttribute("aria-label", "Quantity");
+        qty.addEventListener("change", () => {
+          item.qty = Math.max(0, Number(qty.value) || 0);
+          saveState();
+        });
+
+        qtyWrap.appendChild(qty);
+        row.append(check, name, qtyWrap);
+        list.appendChild(row);
+      });
+
+      wrap.appendChild(list);
+      els.sections.appendChild(wrap);
+    });
+
+    const total = state.items.length;
+    const done = state.items.filter(i => i.done).length;
+    els.progressText.textContent = `${done} / ${total}`;
+    els.progressBar.style.width = total ? `${Math.round(done / total * 100)}%` : "0%";
+  }
+
+  function resetTrip() {
+    if (!confirm("Reset this trip and clear the current packing list?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = null;
+    selectedTypes = new Set();
+    els.daysInput.value = 1;
+    els.nightsInput.value = 1;
+    els.workTopsInput.value = 0;
+    els.dayOutfitsInput.value = 0;
+    els.nightOutfitsInput.value = 0;
+    refreshTags();
+    hydrateFromState();
+  }
+
+
+  els.loginBtn.addEventListener("click", attemptLogin);
+  els.passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptLogin(); });
+  els.loadTripBtn.addEventListener("click", loadTrip);
+  els.resetBtn.addEventListener("click", resetTrip);
+
+  setupTags();
+  if (sessionStorage.getItem(AUTH_KEY) === "1") unlock();
+})();
+</script>
+</body>
+</html>
